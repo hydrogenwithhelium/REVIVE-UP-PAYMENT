@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0f">
+  <title>REVIVE UP 2027</title>
+  <style>
+    :root { --bg:#0b0b0f; --card:#15151b; --text:#f7f7f8; --muted:#a4a4ad; --accent:#fff; --line:#28282f; }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+    body{display:grid;place-items:center;padding:24px}
+    main{width:min(100%,430px);text-align:center}
+    .screen{min-height:calc(100vh - 48px);display:flex;flex-direction:column;justify-content:center;align-items:center}
+    .brand{font-size:clamp(42px,12vw,72px);font-weight:800;letter-spacing:-.06em;line-height:.95}
+    .sub{margin-top:16px;color:var(--muted);font-size:14px}
+    .loader{width:44px;height:2px;background:var(--line);overflow:hidden;margin-top:34px;border-radius:9px}
+    .loader i{display:block;height:100%;width:100%;background:var(--accent);transform:translateX(-100%);animation:load 5s linear forwards}
+    @keyframes load{to{transform:translateX(0)}}
+    .card{width:100%;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px}
+    .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:18px;font-weight:700;color:var(--muted)}
+    h1{margin:10px 0 8px;font-size:32px;letter-spacing:-.04em}
+    .price{font-size:44px;font-weight:800;margin:18px 0}
+    button{border:0;width:100%;padding:16px 18px;border-radius:14px;font-size:16px;font-weight:750;cursor:pointer}
+    .pay{background:#fff;color:#0b0b0f;margin-top:24px}
+    .yes{background:#fff;color:#0b0b0f}
+    .no{background:transparent;color:#fff;border:1px solid var(--line);margin-top:10px}
+    .hidden{display:none!important}
+    .status{margin-top:16px;font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+<main>
+  <section id="intro" class="screen">
+    <div class="brand">REVIVE UP<br>2027</div>
+    <div class="sub">Preparing your payment...</div>
+    <div class="loader"><i></i></div>
+  </section>
+
+  <section id="payScreen" class="screen hidden">
+    <div class="card">
+      <div class="eyebrow">REGISTRATION</div>
+      <h1>Proceed To Payment</h1>
+      <div class="price">₹80</div>
+      <button class="pay" id="payBtn">Pay ₹80 now</button>
+      <div class="status">You’ll be taken to your UPI app.</div>
+    </div>
+  </section>
+
+  <section id="confirmScreen" class="screen hidden">
+    <div class="card">
+      <div class="eyebrow">Payment check</div>
+      <h1>Did you pay?</h1>
+      <button class="yes" id="yesBtn">Yes, I paid</button>
+      <button class="no" id="noBtn">No</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  const HOME = location.href.split('#')[0];
+  const FORM = "https://app.youform.com/forms/pgcccujy";
+  const UPI = "upi://pay?pa=divyamkulshrestha777-1%40okicici&pn=REVIVE%20UP%202027&am=80&cu=INR";
+
+  const intro = document.getElementById("intro");
+  const payScreen = document.getElementById("payScreen");
+  const confirmScreen = document.getElementById("confirmScreen");
+  const payBtn = document.getElementById("payBtn");
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn = document.getElementById("noBtn");
+
+  let paymentStarted = false;
+  let initialPage = true;
+
+  function show(el) {
+    [intro, payScreen, confirmScreen].forEach(x => x.classList.add("hidden"));
+    el.classList.remove("hidden");
+  }
+
+  // Intro -> payment after exactly 5 seconds.
+  setTimeout(() => show(payScreen), 5000);
+
+  payBtn.addEventListener("click", () => {
+    paymentStarted = true;
+    sessionStorage.setItem("revivePaymentStarted", "1");
+    window.location.href = UPI;
+  });
+
+  // When the visitor returns from the UPI app/browser handoff, ask for confirmation.
+  function returnedFromPayment() {
+    if (paymentStarted || sessionStorage.getItem("revivePaymentStarted") === "1") {
+      paymentStarted = false;
+      show(confirmScreen);
+    }
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !initialPage) returnedFromPayment();
+  });
+
+  window.addEventListener("pageshow", () => {
+    if (!initialPage) returnedFromPayment();
+    initialPage = false;
+  });
+
+  yesBtn.addEventListener("click", () => {
+    sessionStorage.removeItem("revivePaymentStarted");
+    window.location.href = FORM;
+  });
+
+  noBtn.addEventListener("click", () => {
+    sessionStorage.removeItem("revivePaymentStarted");
+    window.location.href = HOME;
+  });
+
+  // Prevent a stale confirmation state on a fresh load.
+  window.addEventListener("load", () => {
+    sessionStorage.removeItem("revivePaymentStarted");
+  });
+</script>
+</body>
+</html>
